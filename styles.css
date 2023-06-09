@@ -142,7 +142,8 @@ body {
 .product-img {
   display: block;
   width: 100%;
-  min-height: 12rem;
+  max-height: 20rem;
+  height: auto;
   transition: var(--mainTransition);
 }
 .img-container:hover .product-img {
