@@ -1,5 +1,13 @@
-// variables
 
+const client = contentful.createClient({
+    // This is the space ID.A space is like a project folder in Contentful terms
+    space: "hxzkgznahgg6",
+    //This is the access token for this space.Normally you get both ID and the token in the Contentful web app
+    accessToken: "WtD2WniPahd6Zg61hCIxLbuptwZWXeRscVcM9klfHeY"
+});
+// console.log(client)
+
+// variables
 const cartBtn = document.querySelector('.cart-btn');
 const closeCartBtn = document.querySelector('.close-cart');
 const clearCartBtn = document.querySelector('.clear-cart');
@@ -24,13 +32,20 @@ let buttonsDOM = [];
 class Products {
     async getProducts() {
         try {
+
+            let contentful = await client.getEntries({
+                content_type: "cosyHouse"
+            })
+            console.log(contentful)
+
+
             let result = await fetch("products.json");
             // Fetch the product data from the "products.json" file and store the response in the result variable.
 
             let data = await result.json();
             // Parse the JSON data from the result variable and store it in the data variable.
 
-            let products = data.items;
+            let products = contentful.items;
             // Extract the products array from the data variable and store it in the products variable.
 
             products = products.map(item => {
@@ -63,7 +78,7 @@ class Products {
 
 class UI {
     displayProducts(products) {
-        console.log(products);
+        // console.log(products);
         // Log the products array to the console.
 
         let result = '';
@@ -260,10 +275,67 @@ class UI {
                 // Call the removeItem method of the UI instance to remove the item from the cart.
 
             } else if (event.target.classList.contains("fa-chevron-up")) {
+                // Check if the clicked element has the 'fa-chevron-up' class.
+
                 let addAmount = event.target;
+                // Store the clicked element (the increase quantity chevron) in the addAmount variable.
+
                 let id = addAmount.dataset.id;
-                console.log(addAmount);
-             }
+                // Get the 'data-id' attribute value of the increase quantity chevron, which corresponds to the ID of the cart item.
+
+                let tempItem = cart.find(item => item.id === id);
+                // Find the cart item with the matching ID and store it in the tempItem variable.
+
+                tempItem.amount = tempItem.amount + 1;
+                // Increase the amount/quantity of the cart item by 1.
+
+                Storage.saveCart(cart);
+                // Save the updated cart in the local storage.
+
+                this.setCartValues(cart);
+                // Update the cart values displayed on the UI.
+
+                addAmount.nextElementSibling.innerHTML = tempItem.amount
+                // Update the displayed quantity of the cart item in the UI.
+
+            } else if (event.target.classList.contains("fa-chevron-down")) {
+                // Check if the clicked element has the 'fa-chevron-down' class.
+
+                let lowerAmount = event.target;
+                // Store the clicked element (the decrease quantity chevron) in the lowerAmount variable.
+
+                let id = lowerAmount.dataset.id;
+                // Get the 'data-id' attribute value of the decrease quantity chevron, which corresponds to the ID of the cart item.
+
+                let tempItem = cart.find(item => item.id === id);
+                // Find the cart item with the matching ID and store it in the tempItem variable.
+
+                tempItem.amount = tempItem.amount - 1;
+                // Decrease the amount/quantity of the cart item by 1.
+
+                if (tempItem.amount > 0) {
+                    Storage.saveCart(cart);
+                    // If the updated quantity is still greater than 0, save the updated cart in the local storage.
+
+                    this.setCartValues(cart);
+                    // Update the cart values displayed on the UI.
+
+                    lowerAmount.previousElementSibling.innerHTML = tempItem.amount
+                    // Update the displayed quantity of the cart item in the UI.
+
+
+                } else {
+                    cartContents.removeChild(lowerAmount.parentElement.parentElement)
+                    // If the updated quantity becomes 0 or less, remove the corresponding cart item's DOM element from the cartContent.
+
+                    this.removeItem(id)
+                    // Call the removeItem method of the UI instance to remove the item from the cart.
+
+                }
+
+            }
+
+
         });
     }
    
